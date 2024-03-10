@@ -1,12 +1,9 @@
 name: Main
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
-    paths-ignore:
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/workflows/issue.yml'
-      - '**.md'
 
 jobs:
   build:
@@ -34,6 +31,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Write key
+        run: |
+          echo buildWithGitSuffix=true >> local.properties
+          echo storePassword=password >> local.properties
+          echo keyAlias=alias >> local.properties
+          echo keyPassword=password >> local.properties
+          echo fileDir=`pwd`/key.jks >> local.properties
+          keytool -genkey -dname "cn=A, ou=D, o=G, l=P, st=M, c=I" -keystore key.jks -storepass password -alias alias -keyalg RSA -keysize 4096 -validity 10000
+          
       - name: Cache gradle
         uses: actions/cache@v3
         with:
@@ -47,19 +53,19 @@ jobs:
         run: |
           echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
           ./gradlew prebuild
-
+          
       - name: Build release
         id: buildRelease
         run: |
           ./gradlew :app:buildRelease
           echo "releaseName=$(ls app/build/apk/release/HMA*-release.apk | awk -F '(/|.apk)' '{print $5}')" >> $GITHUB_OUTPUT
-
+          
       - name: Build debug
         id: buildDebug
         run: |
           ./gradlew :app:buildDebug
           echo "debugName=$(ls app/build/apk/debug/HMA*-debug.apk | awk -F '(/|.apk)' '{print $5}')" >> $GITHUB_OUTPUT
-
+          
       - name: Upload release
         if: success()
         uses: actions/upload-artifact@v3
