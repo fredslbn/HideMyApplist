@@ -51,7 +51,7 @@ object PackageHelper {
     private val pm = hmaApp.packageManager
 
     private val packageCache = MutableSharedFlow<Map<String, PackageCache>>(replay = 1)
-    private val mAppList = MutableSharedFlow<MutableList<String>>(replay = 1)
+    private val mAppList = MutableSharedFlow<List<String>>(replay = 1)
     private val mSortedList = MutableSharedFlow<MutableList<String>>(replay = 1)
     val appList: SharedFlow<List<String>> = mSortedList
     val lowerAppList: SharedFlow<List<String>> = mAppList
@@ -81,7 +81,7 @@ object PackageHelper {
                 packageMap
             }
             packageCache.emit(cache)
-            mAppList.emit(cache.keys.toMutableList())
+            mAppList.emit(cache.keys.toList())
         }
     }
 
@@ -93,8 +93,7 @@ object PackageHelper {
             PrefManager.SortMethod.BY_UPDATE_TIME -> Comparators.byUpdateTime
         }
         if (PrefManager.appFilter_reverseOrder) comparator = comparator.reversed()
-        val list = mAppList.first()
-        list.sortWith(firstComparator.then(comparator))
+        val list = mAppList.first().sortedWith(firstComparator.then(comparator))
         mSortedList.emit(list)
     }
 
