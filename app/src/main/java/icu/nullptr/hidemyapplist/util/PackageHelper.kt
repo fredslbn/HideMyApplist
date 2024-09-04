@@ -52,7 +52,6 @@ object PackageHelper {
 
     private val packageCache = MutableSharedFlow<Map<String, PackageCache>>(replay = 1)
     private val mAppList = MutableSharedFlow<List<String>>(replay = 1)
-    private val mSortedList = MutableSharedFlow<MutableList<String>>(replay = 1)
     val appList: SharedFlow<List<String>> = mSortedList
     val lowerAppList: SharedFlow<List<String>> = mAppList
 
